@@ -28,10 +28,10 @@ services:
     # container will use these variables
     # to start the container with these define variables. 
     environment:
-      - "MYSQL_ROOT_PASSWORD=root"
-      - "MYSQL_USER=testuser"
-      - "MYSQL_PASSWORD=admin123"
-      - "MYSQL_DATABASE=backend"
+      - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}"
+      - "MYSQL_USER=${MYSQL_USER}"
+      - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
+      - "MYSQL_DATABASE=${MYSQL_DATABASE}"
     # Mount init.sql file to automatically run 
     # and create tables for us.
     # everything in docker-entrypoint-initdb.d folder
