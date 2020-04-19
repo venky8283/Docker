@@ -1,10 +1,10 @@
-version: '3'
+version: '3.8'
 services:
   web:
     # Path to dockerfile.
     # '.' represents the current directory in which
     # docker-compose.yml is present.
-    build: .
+    image: venky8283/flask_app:3.0
 
     # Mapping of container port to host
     
@@ -12,12 +12,13 @@ services:
       - "5000:5000"
     # Mount volume 
     volumes:
-      - "/usercode/:/code"
-
-    # Link database container to app container 
-    # for rechability.
-    links:
-      - "database:backenddb"
+      - "./:/code"
+    
+    networks:
+      - app
+    
+    deploy:
+      replicas: 3
     
   database:
 
@@ -27,15 +28,46 @@ services:
     # Environment variables for startup script
     # container will use these variables
     # to start the container with these define variables. 
-    environment:
-      - "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}"
-      - "MYSQL_USER=${MYSQL_USER}"
-      - "MYSQL_PASSWORD=${MYSQL_PASSWORD}"
-      - "MYSQL_DATABASE=${MYSQL_DATABASE}"
+    env_file:
+      - ./.env
+
     # Mount init.sql file to automatically run 
     # and create tables for us.
     # everything in docker-entrypoint-initdb.d folder
     # is executed as soon as container is up nd running.
     volumes:
-      - "/usercode/db/init.sql:/docker-entrypoint-initdb.d/init.sql"
+      - "./db/init.sql:/docker-entrypoint-initdb.d/init.sql"
+    
+    deploy:
+      replicas: 2
+
+    networks:
+      - app
+  
+  viz:
+
+    # Visualizer image for swarm cluster.
+
+    image: dockersamples/visualizer
+
+    # Mapping container ports to host port
+
+    ports: 
+
+      - "8080:8080"
+
+    # Mounting docker socket to container.
+    
+    volumes:
+
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    
+    networks:
+      - app
+
+    
+
+  
+networks:
+  app:
     
