@@ -7,7 +7,7 @@ app.config['MYSQL_PASSWORD'] = 'admin123'
 app.config['MYSQL_USER'] = 'testuser'
 app.config['MYSQL_DB'] = 'backend'
 
-app.config['MYSQL_HOST'] = 'backenddb'
+app.config['MYSQL_HOST'] = 'database'
 
 db  = MySQL(app)
 

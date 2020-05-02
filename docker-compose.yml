@@ -1,24 +1,28 @@
-version: '3.8'
+version: '3.7'
 services:
   web:
     # Path to dockerfile.
     # '.' represents the current directory in which
     # docker-compose.yml is present.
-    image: venky8283/flask_app:3.0
 
-    # Mapping of container port to host
-    
-    ports:
-      - "5000:5000"
+    image: venky8283/flask_app:4.0
+
     # Mount volume 
     volumes:
-      - "./:/code"
+      - "./app/:/code:ro"
     
     networks:
       - app
     
     deploy:
-      replicas: 3
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 1024M
     
   database:
 
@@ -36,10 +40,19 @@ services:
     # everything in docker-entrypoint-initdb.d folder
     # is executed as soon as container is up nd running.
     volumes:
-      - "./db/init.sql:/docker-entrypoint-initdb.d/init.sql"
+      - "./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro"
     
+
     deploy:
       replicas: 2
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 1024M
+    
 
     networks:
       - app
@@ -62,6 +75,45 @@ services:
 
       - "/var/run/docker.sock:/var/run/docker.sock"
     
+    networks:
+      - app
+  
+  nginx:
+
+    # Application / Proxy server for our production flask app.
+
+    image: nginx:1.13.3
+
+    # Mount SSL and non SSL ports to redirect localhost trafic to 
+    # Nginx. 
+
+    ports:
+      - "443:443"
+      - "80:80"
+    
+    # Mount self signed certificates and configuration file as read only
+    # to the container.
+
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    
+    
+    # Deploy replicas to divide load to two services.
+
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 1024M
+
+    # Attach network to establish connection 
+    # between flask app and nginx. 
+
     networks:
       - app
 
